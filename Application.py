@@ -1,6 +1,6 @@
+from Gui import *
 import pickle
-import os
-from Licence import *
+from Data.Licence import *
 
 
 def save_data(licence_list):
@@ -28,114 +28,14 @@ def load_list():
         return pickle.load(save_file)
 
 
-def read_new_licence():
-    # READ: Licence number
-    lic_number = input("Licence number:")
-
-    # READ: Issue date
-    success = False
-    issue_date = None
-    while not success:
-        issue_date = input("Issue date (DD/MM/YYYY):")
-        try:
-            issue_date = issue_date.split(sep="/")
-            day = int(issue_date[0])
-            month = int(issue_date[1])
-            year = int(issue_date[2])
-            issue_date = Date(day, month, year)
-            success = True
-        except ValueError:
-            print("Invalid date format")
-        except IndexError:
-            print("Invalid date format")
-        except Exception as e:
-            print(e)
-
-    # READ: validity (months)
-    success = False
-    validity = None
-    while not success:
-        try:
-            validity = int(input("Validity in months:"))
-            success = True
-        except ValueError:
-            print("Enter numbers only")
-
-    # READ: exporter
-    exporter = input("Exporter name:")
-
-    # READ: agent
-    agent = input("Agent name:")
-
-    # READ: rupees
-    success = False
-    rupees = None
-    while not success:
-        try:
-            rupees = int(input("Value in rupees:"))
-            success = True
-        except ValueError:
-            print("Enter numbers only.")
-
-    # READ: dollars
-    success = False
-    dollars = None
-    while not success:
-        try:
-            dollars = int(input("Value in dollars:"))
-            success = True
-        except ValueError:
-            print("Enter numbers only.")
-
-    # READ: number of items
-    item_list = ItemList()
-    success = False
-    number_of_items = None
-    while not success:
-        try:
-            number_of_items = int(input("Number of items:"))
-            success = True
-        except ValueError:
-            print("Enter numbers only")
-
-    # READ: items
-    for _ in range(number_of_items):
-        success = False
-        while not success:
-            try:
-                item = input("item:")
-                amount = int(input("amount in KG:"))
-                item_list.add_item(item, amount)
-                success = True
-            except ValueError:
-                print("Enter numbers only for amount in KG")
-            except Exception as e:
-                print(e)
-
-    return lic_number, issue_date, validity, exporter, agent, rupees, dollars, item_list
-
-
 if __name__ == "__main__":
-    running = True
     loaded_list = load_list()
 
-    while running:
-        cmd = input("Command:")
+    root = tk.Tk()
+    root.state("zoomed")
 
-        if cmd == "newlic":
-            lic = read_new_licence()    # Licence signature as tuple
-            new_lic = Licence(lic[0], lic[1], lic[2], lic[3], lic[4], lic[5], lic[6], lic[7])
-            loaded_list.append(new_lic)
-            save_data(loaded_list)
+    main_application = MainApplication(root)
+    add_licence_tab = AddLicenceTab(main_application.main_notebook, loaded_list, save_data)
+    view_all_tab = ViewAllTab(main_application.main_notebook, loaded_list)
 
-        if cmd == "display":
-            print("{:^10} | {:^10} | {:^10} | {:^6}".format("LicenceNum", "IssueDate", "ExpiryDate", "dollars"))
-            for lic in loaded_list:
-                print("{:^10} | {:^10} | {:^10} | {:^6}$".format(lic.lic_number, str(lic.issue_date),
-                                                                 str(lic.expiry_date), lic.balance_usd))
-
-        elif cmd == "exit":
-            running = False
-
-        else:
-            print("Invalid Command")
+    root.mainloop()
